@@ -13,7 +13,7 @@ const port = 3000;
 module.exports = {
     devtool: '#source-map',
     entry: {
-        bundle: './app/main.jsx',
+        bundle: './app/router.jsx',
         vendor: ['react', 'react-dom', 'jquery', 'react-router', 'redux'],
     },
     output: {

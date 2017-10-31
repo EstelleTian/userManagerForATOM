@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
-import { forceLogout, filterList, updateUserList, updateMultiFilter, toggleFilterPopover, closeFilterPopover} from '../actions'
-import FilterContent from '../components/FilterContent'
+import { forceLogout, filterList, updateUserList, updateMultiFilter, toggleFilterPopover, closeFilterPopover} from '../../actions/index'
+import FilterContent from '../../components/filterContent/index'
 
 const mapStateToProps = (state) => {
     return {

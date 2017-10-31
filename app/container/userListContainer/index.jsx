@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
-import { forceLogout, filterList, updateUserList, selectedUser, toggleSlider, closeSlider } from '../actions'
-import UserList from '../components/userList'
+import { forceLogout, filterList, updateUserList, selectedUser, toggleSlider, closeSlider } from '../../actions/index'
+import UserList from '../../components/userList/index'
 
 const mapStateToProps = (state) => {
     return {

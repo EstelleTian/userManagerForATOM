@@ -1,6 +1,6 @@
 //测试地址
 // const host = "http://192.168.217.233:18380/uuma-server"
-const host = "http://192.168.243.238:8080/uuma-server"
+const host = "http://192.168.243.69:8080/uuma-server"
 //新疆生产地址
 // const host = "http://10.27.10.16:18080/uuma-server"
 //西南生产地址

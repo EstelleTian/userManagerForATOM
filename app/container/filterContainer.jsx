@@ -3,7 +3,12 @@ import { forceLogout, filterList, updateUserList, updateMultiFilter, toggleFilte
 import FilterContent from '../components/FilterContent'
 
 const mapStateToProps = (state) => {
-    return state;
+    return {
+        userList: state.userList,
+        filterList: state.filterList,
+        multiFilterKey: state.multiFilterKey,
+        filterPopover: state.filterPopover,
+    };
 }
 
 const mapDispatchToProps = {

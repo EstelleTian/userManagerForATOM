@@ -1,5 +1,6 @@
 import React from 'react'
 import $ from 'jquery'
+import { browserHistory } from 'react-router'
 import { Row, Col} from 'antd'
 import User from "../user"
 import SliderBar from '../sliderBar'
@@ -84,15 +85,27 @@ class UserList extends React.Component{
                 url: getUserListUrl,
                 type: 'GET',
                 dataType: 'json',
+                beforeSend: function(request) {
+                    request.setRequestHeader("Authorization", 'AAAABBBBCCCX');
+                },
                 success: function(json){
-                    if(json.hasOwnProperty("warn")){
-                        updateUserList({});
-                    }else{
-                        const userList = json.onLineUserResultList || [];
-                        updateUserList(userList);
+                    const status = json.status*1;
+                    if( status == 200 ){
+                        if(json.hasOwnProperty("warn")){
+                            updateUserList({});
+                        }else{
+                            const userList = json.onLineUserResultList || [];
+                            updateUserList(userList);
+                        }
+                    }else if( status == 400 ){
+                        if(json.hasOwnProperty("error")){
+                            browserHistory.push("/");
+                        }
                     }
+
                 },
                 error: function(err){
+                    //若失败，进入后判断是否是未登录，若未登录则进入调整到登录页面
                     console.error(err);
                 }
             })

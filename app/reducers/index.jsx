@@ -1,8 +1,10 @@
 import { combineReducers } from 'redux';
+import { login } from './login';
 import { userList, sliderBar } from './userList';
 import { filterKey, multiFilterKey, filterPopover } from './filterKey';
 
 const reducer = combineReducers({
+    login,
     userList,
     filterKey,
     sliderBar,

@@ -4,12 +4,14 @@ import { createStore } from 'redux';
 import { Provider } from 'react-redux';
 import Reducer from '../reducers';
 import { Layout, Menu, Breadcrumb, Icon} from 'antd';
+import LogoutStore from './LogoutStore'
 const { Header, Content, Footer, Sider } = Layout;
 import './app.less';
 
 const Store = createStore(Reducer)
 
 const App = (props) => {
+
     return(
         <Provider store={Store}>
             <Layout className="sider_layout" style={{ minHeight: '100vh'}}>
@@ -19,7 +21,10 @@ const App = (props) => {
                     </div>
                     <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
                         <Menu.Item key="1">
-                            <Link to="/"><Icon type="user" />用户列表</Link>
+                            <Link to="/home/user"><Icon type="user" />用户列表</Link>
+                        </Menu.Item >
+                        <Menu.Item key="2">
+                            <LogoutStore />
                         </Menu.Item >
                     </Menu>
                 </Sider>

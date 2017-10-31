@@ -67,10 +67,11 @@ const User = ({ userobj, forceLogout, selectedUser, toggleSlider}) => {
     }
 
     const toggleUserInfo = (token) => {
-        let url = getUserByTokenUrl+"?token="+token
+        let url = getUserByTokenUrl;
         $.ajax({
             url: url,
             type: 'get',
+            data: "token="+token,
             dataType: 'json',
             success: function(json){
                 if(json.hasOwnProperty("warn")){

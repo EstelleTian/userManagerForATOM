@@ -1,5 +1,11 @@
+
+export const userLogin = param => ({
+    type: 'USER_LOGIN',
+    ...param
+})
+
 export const forceLogout = token => ({
-    type: 'LOGOUT',
+    type: 'FORCELOGOUT',
     token,
 })
 export const updateUserList = userList => ({

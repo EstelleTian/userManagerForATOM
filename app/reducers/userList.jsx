@@ -1,7 +1,7 @@
 
 export const userList = ( state = [], action) => {
     switch (action.type){
-        case "LOGOUT" :{
+        case "FORCELOGOUT" :{
             let list = [];
             for(let index in state){
                 let userObj = state[index];

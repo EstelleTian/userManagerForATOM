@@ -3,8 +3,12 @@ import { forceLogout, filterList, updateUserList, selectedUser, toggleSlider, cl
 import UserList from '../components/userList'
 
 const mapStateToProps = (state) => {
-
-    return state;
+    return {
+        userList: state.userList,
+        filterKey: state.filterKey,
+        sliderBar: state.sliderBar,
+        multiFilterKey: state.multiFilterKey,
+    };
 }
 
 const mapDispatchToProps = {

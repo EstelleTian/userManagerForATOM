@@ -1,23 +1,19 @@
 import { connect } from 'react-redux'
-import { forceLogout, filterList, updateUserList, updateMultiFilter, toggleFilterPopover, closeFilterPopover} from '../../actions/index'
-import FilterContent from '../../components/filterContent/index'
+import { forceLogout, filterList, updateOnlineUserList, updateMultiFilter} from '../../actions/index'
+import FilterContent from '../../components/onlineUsers/filterContent/index'
 
-const mapStateToProps = (state) => {
-    return {
-        userList: state.userList,
-        filterList: state.filterList,
-        multiFilterKey: state.multiFilterKey,
-        filterPopover: state.filterPopover,
-    };
-}
+const mapStateToProps = (state) => ({
+    userList: state.onlineUserList,
+    filterList: state.filterList,
+    multiFilterKey: state.multiFilterKey,
+    filterPopover: state.filterPopover,
+})
 
 const mapDispatchToProps = {
     forceLogout: forceLogout,
     filterList: filterList,
-    updateUserList: updateUserList,
+    updateOnlineUserList: updateOnlineUserList,
     updateMultiFilter: updateMultiFilter,
-    toggleFilterPopover: toggleFilterPopover,
-    closeFilterPopover: closeFilterPopover,
 }
 
 const FilterContainer = connect(

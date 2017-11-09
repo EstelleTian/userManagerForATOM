@@ -1,10 +1,11 @@
 import React from 'react'
+import { browserHistory, hashHistory } from 'react-router'
 import { Icon, Row, Col, Modal, Checkbox, Button} from 'antd'
-import { sendLogoutUrl, getUserByTokenUrl, parseHalfFullTime } from '../../utils/requestUrls'
+import { sendLogoutUrl, getOnlineUserByTokenUrl, parseHalfFullTime } from '../../../utils/requestUrls'
 import $ from 'jquery'
-import "./user.less"
+import "./onlineUser.less"
 
-const User = ({ userobj, forceLogout, selectedUser, toggleSlider}) => {
+const OnlineUser = ({ userobj, forceLogout, selectedUser, toggleSlider}) => {
     const onClickLogout = (e) => {
         const token = userobj.token;
         const username = userobj.user.username;
@@ -42,22 +43,37 @@ const User = ({ userobj, forceLogout, selectedUser, toggleSlider}) => {
         //         }
         //     })
         // })
+        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
         $.ajax({
             url: sendLogoutUrl,
             data: "tokens=" + token,
             type: 'post',
             dataType: 'json',
+            beforeSend: function(request) {
+                request.setRequestHeader("Authorization", UUMAToken);
+            },
             success: function(json){
-                if(json.hasOwnProperty("error") || json.status*1 == 500){
-                    Modal.error({
-                        title: "退出失败，用户"+username+"不存在!"
-                    })
-                }else if( json.status*1 == 200 ){
+                const status = json.status*1 || 0;
+                if(json.hasOwnProperty("error")){
+                    if( status == 500 ){
+                        Modal.error({
+                            title: "退出失败，用户"+username+"不存在!"
+                        })
+                    }else if( status == 400 ){
+                        Modal.error({
+                            title: "登录失效，请重新登录!",
+                            onOk(){
+                                hashHistory.push('/');
+                            }
+                        })
+                    }
+                }else if( status == 200 ){
                     Modal.success({
                         title: "用户"+username+"退出成功!"
                     })
                     forceLogout(token);
                 }
+
             },
             error: function(err){
                 console.error(err);
@@ -67,14 +83,25 @@ const User = ({ userobj, forceLogout, selectedUser, toggleSlider}) => {
     }
 
     const toggleUserInfo = (token) => {
-        let url = getUserByTokenUrl;
+        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
+        let url = getOnlineUserByTokenUrl;
         $.ajax({
             url: url,
             type: 'get',
             data: "token="+token,
             dataType: 'json',
+            beforeSend: function(request) {
+                request.setRequestHeader("Authorization", UUMAToken);
+            },
             success: function(json){
-                if(json.hasOwnProperty("warn")){
+                if(json.hasOwnProperty("error") && json.status*1 == 400){
+                    Modal.error({
+                        title: "登录失效，请重新登录!",
+                        onOk(){
+                            hashHistory.push('/');
+                        }
+                    })
+                }else if(json.hasOwnProperty("warn")){
                     Modal.error({
                         title: "获取用户信息失败，用户不存在!"
                     })
@@ -148,4 +175,4 @@ const User = ({ userobj, forceLogout, selectedUser, toggleSlider}) => {
 }
 
 
-export default User;
+export default OnlineUser;

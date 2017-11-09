@@ -1,25 +1,38 @@
 import React from 'react'
+import { browserHistory, hashHistory } from 'react-router'
 import $ from 'jquery'
 import {Row, Col, Button, Modal, Input} from 'antd'
 import MultiFilter from '../multiFilter'
-import { getUserListUrl, sendLogoutUrl } from '../../utils/requestUrls'
+import { getOnlineUserListUrl, sendLogoutUrl } from '../../../utils/requestUrls'
 import './filterContent.less'
 
 const Search = Input.Search;
 
 class FilterContent extends React.Component{
+    //刷新列表（查询会重置）
     retrieveUserList = () =>{
-        const { updateUserList, updateMultiFilter } = this.props;
+        const { updateOnlineUserList, updateMultiFilter } = this.props;
+        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
         $.ajax({
-            url: getUserListUrl,
+            url: getOnlineUserListUrl,
             type: 'GET',
             dataType: 'json',
+            beforeSend: function(request) {
+                request.setRequestHeader("Authorization", UUMAToken);
+            },
             success: function(json){
-                if(json.hasOwnProperty("warn")){
-                    updateUserList({});
+                if(json.hasOwnProperty("error") && json.status*1 == 400){
+                    Modal.error({
+                        title: "登录失效，请重新登录!",
+                        onOk(){
+                            hashHistory.push('/');
+                        }
+                    })
+                }else if(json.hasOwnProperty("warn")){
+                    updateOnlineUserList({});
                 }else{
                     const userList = json.onLineUserResultList || [];
-                    updateUserList(userList);
+                    updateOnlineUserList(userList);
                 }
                 updateMultiFilter({});
                 $(".clear_btn").trigger('click');
@@ -46,28 +59,42 @@ class FilterContent extends React.Component{
             Modal.confirm({
                 title: '确定批量退出用户'+namesStr+'?',
                 onOk(){
+                    const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
                     $.ajax({
                         url: sendLogoutUrl,
                         data: "tokens=" + tokensStr,
                         type: 'post',
                         dataType: 'json',
+                        beforeSend: function(request) {
+                            request.setRequestHeader("Authorization", UUMAToken);
+                        },
                         success: function(json){
-                            if(json.hasOwnProperty("error") || json.status*1 == 500){
-                                let msg = json.error.message || "";
-                                const tokenArr = msg.split(",");
-                                let invalidNames = [];
-                                for(let i=0,len=tokenArr.length; i<len; i++){
-                                    const token = tokenArr[i];
-                                    const index = tokens.indexOf(token);
-                                    if(index > -1){
-                                        invalidNames.push(names[index]);
+                            const status = json.status*1 || 0;
+                            if(json.hasOwnProperty("error")){
+                                if( status == 500 ){
+                                    let msg = json.error.message || "";
+                                    const tokenArr = msg.split(",");
+                                    let invalidNames = [];
+                                    for(let i=0,len=tokenArr.length; i<len; i++){
+                                        const token = tokenArr[i];
+                                        const index = tokens.indexOf(token);
+                                        if(index > -1){
+                                            invalidNames.push(names[index]);
+                                        }
                                     }
+                                    const invalidNamesStr = invalidNames.join(",");
+                                    Modal.warn({
+                                        title: "批量退出用户"+invalidNamesStr+"失败，因用户不存在。其余用户刷新成功！"
+                                    })
+                                }else if( status == 400 ){
+                                    Modal.error({
+                                        title: "登录失效，请重新登录!",
+                                        onOk(){
+                                            hashHistory.push('/');
+                                        }
+                                    })
                                 }
-                                const invalidNamesStr = invalidNames.join(",");
-                                Modal.warn({
-                                    title: "批量退出用户"+invalidNamesStr+"失败，因用户不存在。其余用户刷新成功！"
-                                })
-                            }else if( json.status*1 == 200 ){
+                            }else if( status == 200 ){
                                 Modal.success({
                                     title: "批量退出用户"+namesStr+"成功"
                                 })
@@ -91,7 +118,7 @@ class FilterContent extends React.Component{
     }
 
     render(){
-        const { filterList, updateUserList, updateMultiFilter, toggleFilterPopover, closeFilterPopover, filterPopover, multiFilterKey } = this.props;
+        const { filterList, updateOnlineUserList, updateMultiFilter, toggleFilterPopover, closeFilterPopover, filterPopover, multiFilterKey } = this.props;
         return(
             <Row className="filter_container">
                 <Col span={4}>
@@ -116,7 +143,7 @@ class FilterContent extends React.Component{
                 </Col>
                 <Col lg={14} md={14} xs={12} className="opt_btn">
                     <MultiFilter
-                        updateUserList={updateUserList}
+                        updateOnlineUserList={updateOnlineUserList}
                         toggleFilterPopover={toggleFilterPopover}
                         closeFilterPopover={closeFilterPopover}
                         filterPopover = {filterPopover}

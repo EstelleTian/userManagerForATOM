@@ -1,29 +1,23 @@
 import { connect } from 'react-redux'
-import { forceLogout, filterList, updateUserList, selectedUser, toggleSlider, closeSlider } from '../../actions/index'
-import UserList from '../../components/userList/index'
+import { refreshUsers, updateUsers, addOneUser, delOneUser, openUserModal } from "../../actions"
+import usersList from '../../components/users/usersList'
 
-const mapStateToProps = (state) => {
-    return {
-        userList: state.userList,
-        filterKey: state.filterKey,
-        sliderBar: state.sliderBar,
-        multiFilterKey: state.multiFilterKey,
-    };
-}
+
+const mapStateToProps = (state) => ({
+    userList: state.userList
+});
 
 const mapDispatchToProps = {
-    forceLogout: forceLogout,
-    filterList: filterList,
-    updateUserList: updateUserList,
-    selectedUser: selectedUser,
-    toggleSlider: toggleSlider,
-    closeSlider: closeSlider
+    refreshUsers,
+    updateUsers,
+    addOneUser,
+    delOneUser,
+    openUserModal
 }
-
 
 const UserListContainer = connect(
     mapStateToProps,
     mapDispatchToProps
-)(UserList)
+)(usersList);
 
 export default UserListContainer

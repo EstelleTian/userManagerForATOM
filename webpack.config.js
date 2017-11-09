@@ -11,7 +11,7 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 const port = 3000;
 
 module.exports = {
-    devtool: '#source-map',
+    devtool: 'source-map',
     entry: {
         bundle: './app/router.jsx',
         vendor: ['react', 'react-dom', 'jquery', 'react-router', 'redux'],

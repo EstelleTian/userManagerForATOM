@@ -4,7 +4,7 @@
   "description": "备忘录",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --open --devtool eval --progress --hot",
+    "start": "webpack-dev-server --open --devtool eval-source-map --progress --hot",
     "build": "webpack --config webpack.production.config.js -p"
   },
   "author": "tanjizhen",
@@ -55,7 +55,7 @@
     "react-redux": "^5.0.6",
     "react-router": "^2.8.1",
     "style-loader": "^0.16.1",
-    "webpack": "^2.4.1",
+    "webpack": "^2.7.0",
     "webpack-bundle-analyzer": "^2.8.3",
     "webpack-chunk-hash": "^0.4.0",
     "webpack-dev-server": "^2.4.5"

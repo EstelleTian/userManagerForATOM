@@ -11,7 +11,7 @@ const uglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 module.exports = {
     entry: {
-        bundle: './app/main.jsx',
+        bundle: './app/router.jsx',
         vendor: ['react', 'react-dom', 'jquery', 'react-router', 'redux']
     },
     output: {

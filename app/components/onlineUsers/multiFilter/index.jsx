@@ -1,7 +1,7 @@
 import React from 'react'
 import { Form, Input, Popover, Button, DatePicker, Tag } from 'antd';
 import $ from 'jquery'
-import { sendMultiFiltersUrl, parseFullTime } from '../../utils/requestUrls'
+import { sendMultiFiltersUrl, parseFullTime } from '../../../utils/requestUrls'
 import './multiFilter.less'
 const FormItem = Form.Item;
 
@@ -69,7 +69,7 @@ class MultiFilterForm extends React.Component {
     }
 
     sendMultiRequest = ( datas, isClose ) => {
-        const { updateUserList, updateMultiFilter, closeFilterPopover } = this.props;
+        const { updateOnlineUserList, updateMultiFilter } = this.props;
         let sendValues = {
             username: "",
             clientVersion: "",
@@ -78,19 +78,20 @@ class MultiFilterForm extends React.Component {
             endTime: "",
             ...datas
         }
+        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
         $.ajax({
             url: sendMultiFiltersUrl,
             data: sendValues,
             type: 'POST',
             dataType: 'json',
+            beforeSend: function(request) {
+                request.setRequestHeader("Authorization", UUMAToken);
+            },
             success: (res) => {
                 if("200" == res.status && res.hasOwnProperty("onLineUserResultList")){
                     const userList = res.onLineUserResultList || [];
-                    updateUserList(userList);
+                    updateOnlineUserList(userList);
                     updateMultiFilter(sendValues);
-                    if(isClose){
-                        closeFilterPopover();
-                    }
                 }
             },
             error: (err) => {
@@ -119,8 +120,8 @@ class MultiFilterForm extends React.Component {
                     offset: 0,
                 },
                 sm: {
-                    span: 20,
-                    offset: 7,
+                    span: 10,
+                    offset: 12,
                 },
             },
         };
@@ -201,7 +202,6 @@ class MultiFilterForm extends React.Component {
                 <FormItem {...tailFormItemLayout}>
                     <Button type="primary" htmlType="submit">查询</Button>
                     <Button type="ghost" className="m_l_10 clear_btn" onClick={this.resetForm}>清空</Button>
-                    <Button type="ghost" className="m_l_10" onClick={this.props.closeFilterPopover}>关闭</Button>
                 </FormItem>
             </Form>
         );
@@ -211,22 +211,20 @@ MultiFilterForm = Form.create()(MultiFilterForm);
 
 class MultiFilter extends React.Component{
     render(){
-        const { updateUserList, toggleFilterPopover, updateMultiFilter, closeFilterPopover, filterPopover, multiFilterKey } = this.props;
+        const { updateOnlineUserList, toggleFilterPopover, updateMultiFilter, multiFilterKey } = this.props;
         return (
             <div>
                 <Popover
                     content={
                         <div>
                             <MultiFilterForm
-                                updateUserList = {updateUserList}
-                                closeFilterPopover = {closeFilterPopover}
+                                updateOnlineUserList = {updateOnlineUserList}
                                 updateMultiFilter = {updateMultiFilter}
                             />
                         </div>
                     }
                     title=""
                     trigger="click"
-                    visible={filterPopover}
                 >
                     <Button type="primary" icon="search" onClick={toggleFilterPopover}>多条件查询</Button>
                 </Popover>

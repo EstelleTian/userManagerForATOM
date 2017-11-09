@@ -1,5 +1,5 @@
 import React from 'react';
-import { parseFullTime } from '../../utils/requestUrls'
+import { parseFullTime } from '../../../utils/requestUrls'
 import './sliderBar.less';
 import { Icon, Col, Row } from 'antd'
 

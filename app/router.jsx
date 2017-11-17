@@ -12,7 +12,7 @@ import GroupListContainer from './container/groupListContainer';
 import './fontIcon/index.css';
 
 const Root = () => (
-    <Router history={hashHistory}>
+    <Router history={browserHistory}>
         <Route path="/" component={ App } >
             <IndexRoute components={ LoginContainer } />
             <Route path="/home" component={Home} >
@@ -24,7 +24,6 @@ const Root = () => (
                 <Route path="/home/groups" component={GroupListContainer} />
             </Route>
         </Route>
-
     </Router>
 );
 

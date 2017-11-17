@@ -1,6 +1,9 @@
+// import path from 'path';
+
 //测试地址
 // const host = "http://192.168.217.233:18380/uuma-server"
 const host = "http://192.168.243.69:8080/uuma-server"
+// const host = "/uuma-server"
 //新疆生产地址
 // const host = "http://10.27.10.16:18080/uuma-server"
 //西南生产地址
@@ -25,7 +28,23 @@ export const getAuthoritiesListUrl = `${host}/authorities/list`
 export const getGroupsListUrl = `${host}/groups/list`
 //查询所有用户
 export const getUsersListUrl = `${host}/users/list`
+//添加/修改组
+export const updateGroupstUrl = `${host}/groups`
+//添加/修改权限
+export const updateAuthoritiesUrl = `${host}/authorities`
+//添加/修改角色
+export const updateRolesUrl = `${host}/roles`
+//添加/修改用户
+export const updateUsesrUrl = `${host}/users`
 
+//删除组
+export const deleteGroupstUrl = `${host}/groups/`
+//删除权限
+export const deleteAuthoritiesUrl = `${host}/authorities/`
+//删除角色
+export const deleteRolesUrl = `${host}/roles/`
+//删除用户
+export const deleteUsesrUrl = `${host}/users/`
 
 
 export const parseHalfFullTime = ( str ) => {

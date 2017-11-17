@@ -25,7 +25,7 @@ class FilterContent extends React.Component{
                     Modal.error({
                         title: "登录失效，请重新登录!",
                         onOk(){
-                            hashHistory.push('/');
+                            browserHistory.push('/');
                         }
                     })
                 }else if(json.hasOwnProperty("warn")){
@@ -90,7 +90,7 @@ class FilterContent extends React.Component{
                                     Modal.error({
                                         title: "登录失效，请重新登录!",
                                         onOk(){
-                                            hashHistory.push('/');
+                                            browserHistory.push('/');
                                         }
                                     })
                                 }

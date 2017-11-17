@@ -95,7 +95,7 @@ class OnlineUserList extends React.Component{
                         Modal.error({
                             title: "登录失效，请重新登录!",
                             onOk(){
-                                hashHistory.push('/');
+                                browserHistory.push('/');
                             }
                         })
                     }else{
@@ -120,13 +120,17 @@ class OnlineUserList extends React.Component{
                     const status = json.status*1;
                     if( status == 200 ){
                         if(json.hasOwnProperty("warn")){
+                            $usNoData.html("暂无数据");
                             updateOnlineUserList({});
                         }else{
                             const userList = json.onLineUserResultList || [];
+                            if(userList.length == 0){
+                                $usNoData.html("暂无数据");
+                            }
                             updateOnlineUserList(userList);
                         }
                     }else if( json.hasOwnProperty("error") && status == 400 ){
-                        hashHistory.push('/');
+                        browserHistory.push('/');
                     }
                 },
                 error: function(err){

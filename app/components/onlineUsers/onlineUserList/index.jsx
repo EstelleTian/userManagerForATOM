@@ -1,7 +1,7 @@
 import React from 'react'
+import axios from 'axios'
 import $ from 'jquery'
-import { browserHistory, hashHistory } from 'react-router'
-import { Row, Col, Progress} from 'antd'
+import { Row, Col, Modal, Badge} from 'antd'
 import OnlineUser from "../onlineUser/index"
 import SliderBar from '../sliderBar/index'
 import { getOnlineUserListUrl, sendMultiFiltersUrl} from '../../../utils/requestUrls'
@@ -12,57 +12,28 @@ import './onlineUserList.less'
 class OnlineUserList extends React.Component{
     constructor(props){
         super(props);
-        this.converUserList = this.converUserList.bind(this);
         this.retrieveUserList = this.retrieveUserList.bind(this);
+        this.timerId = "";
     }
 
     componentDidMount(){
-        const that = this;
-        that.retrieveUserList();
-        //定时刷新用户列表
-        setInterval(function(){
-            that.retrieveUserList();
-        }, 1000*10);
+        this.retrieveUserList();
     }
 
-    converUserList(userList){
-        let list = [];
-        let {filterKey} = this.props;
-        //用户是否包含查询关键字
-        const mapUserList = (userObj, filterkey) => {
-            let isShow = false;
-            for(let item in userObj){
-                let key = userObj[item];
-                if(typeof key == 'object'){
-                    isShow = mapUserList(key ,filterkey);
-                }else if(typeof key == 'string'){
-                    if(key.toLowerCase().indexOf(filterkey) > -1){
-                        isShow = true;
-                        break;
-                    }
-                }
-            }
-            return isShow;
-        }
-        //若自定义查询不是'all',根据查询字查询
-        if(filterKey != "all"){
-            for(let index in userList){
-                const userObj = userList[index];
-                let isShow = mapUserList(userObj, filterKey.toLowerCase()+"");
-                if(isShow){
-                    list.push(userObj);
-                }
-            }
-        }else{
-            //若自定义查询是'all' 显示全部
-            list = userList
-        }
-        return list;
+    componentWillUnmount(){
+        clearTimeout(this.timerId);
     }
 
     //获取全部用户
     retrieveUserList(){
-        const { updateOnlineUserList, multiFilterKey } = this.props;
+        //取用户token
+        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
+        if(UUMAToken == ""){
+            return;
+        }
+        const that = this;
+        const { updateOnlineUserList, multiFilterKey, history } = this.props;
+
         //是否有多条件查询
         let hasMultiFilter = false;
         for(let key in multiFilterKey){
@@ -74,101 +45,151 @@ class OnlineUserList extends React.Component{
         if( $usNoData.length != 0 ){
             $usNoData.html("用户查询中...");
         }
-        //取用户token
-        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
         //若有多条件查询，执行条件查询用户接口
         if(hasMultiFilter){
-            $.ajax({
+            axios.request({
                 url: sendMultiFiltersUrl,
-                data: multiFilterKey,
-                type: 'POST',
-                dataType: 'json',
-                beforeSend: function(request) {
-                    request.setRequestHeader("Authorization", UUMAToken);
+                method: 'post',
+                params: multiFilterKey,
+                headers: {
+                    Authorization: UUMAToken,
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
                 },
-                success: (json) => {
-                    const status = json.status*1 || 0;
-                    if(200 == status && json.hasOwnProperty("onLineUserResultList")){
+                withCredentials: true
+            }).then( response => {
+                const json = response.data;
+                const status = json.status*1 || 0;
+                if(200 == status){
+                    if(json.hasOwnProperty("onLineUserResultList")){
                         const userList = json.onLineUserResultList || [];
-                        updateOnlineUserList(userList);
-                    }else if( 400 == status ){
+                        updateOnlineUserList(userList, false);
+                    }else if(json.hasOwnProperty("warn")){
+                        const error = json.warn.message ? json.warn.message : "";
                         Modal.error({
-                            title: "登录失效，请重新登录!",
-                            onOk(){
-                                browserHistory.push('/');
-                            }
+                            title: "查询失败:" +error
                         })
-                    }else{
-                        console.error("received data is invalida.");
-                        console.error(json);
                     }
-                },
-                error: (err) => {
-                    console.error(err);
+                    //定时刷新用户列表
+                    that.timerId = setTimeout(function(){
+                        that.retrieveUserList();
+                    }, 1000*30);
+                }else if( 400 == status ){
+                    Modal.error({
+                        title: "登录失效，请重新登录!",
+                        onOk(){
+                            history.push('/');
+                        }
+                    })
+                }else{
+                    console.error("received data is invalida.");
+                    console.error(json);
+                    //定时刷新用户列表
+                    that.timerId = setTimeout(function(){
+                        that.retrieveUserList();
+                    }, 1000*30);
                 }
+            }).catch(err => {
+                console.error(err);
+                //定时刷新用户列表
+                that.timerId = setTimeout(function(){
+                    that.retrieveUserList();
+                }, 1000*30);
             })
         }else{//若没有多条件查询，执行查询全部在线用户接口
-            let _this = this;
-            $.ajax({
-                url: getOnlineUserListUrl,
-                type: 'GET',
-                dataType: 'json',
-                beforeSend: function(request) {
-                    request.setRequestHeader("Authorization", UUMAToken);
+            axios.get(getOnlineUserListUrl,{
+                headers: {
+                    Authorization: UUMAToken
                 },
-                success: function(json){
-                    const status = json.status*1;
-                    if( status == 200 ){
-                        if(json.hasOwnProperty("warn")){
+                withCredentials: true
+            }).then( response => {
+                const json = response.data;
+                const status = json.status*1;
+                if( status == 200 ){
+                    if(json.hasOwnProperty("warn")){
+                        $usNoData.html("暂无数据");
+                        updateOnlineUserList([], true);
+                    }else{
+                        const userList = json.onLineUserResultList || [];
+                        if(userList.length == 0){
                             $usNoData.html("暂无数据");
-                            updateOnlineUserList({});
-                        }else{
-                            const userList = json.onLineUserResultList || [];
-                            if(userList.length == 0){
-                                $usNoData.html("暂无数据");
-                            }
-                            updateOnlineUserList(userList);
                         }
-                    }else if( json.hasOwnProperty("error") && status == 400 ){
-                        browserHistory.push('/');
+                        updateOnlineUserList(userList, false);
                     }
-                },
-                error: function(err){
-                    //若失败，进入后判断是否是未登录，若未登录则进入调整到登录页面
-                    console.error(err);
+
+                    //定时刷新用户列表
+                    that.timerId = setTimeout(function(){
+                        that.retrieveUserList();
+                    }, 1000*30);
+                }else if( json.hasOwnProperty("error") && status == 400 ){
+                    Modal.error({
+                        title: "登录失效，请重新登录!",
+                        onOk(){
+                            history.push('/');
+                        }
+                    })
+                }else{
+                    console.error("received data is invalida.");
+                    console.error(json);
+                    //定时刷新用户列表
+                    that.timerId = setTimeout(function(){
+                        that.retrieveUserList();
+                    }, 1000*30);
                 }
+            }).catch(err => {
+                console.error(err);
+                //定时刷新用户列表
+                that.timerId = setTimeout(function(){
+                    that.retrieveUserList();
+                }, 1000*30);
             })
+
         }
     }
 
     render(){
-        const { forceLogout, selectedUser, toggleSlider, closeSlider, userList, sliderBar } = this.props;
+        const { forceLogout, selectedUser, toggleSlider, closeSlider, usersObj, sliderBar, history, totalNum, optsAuths } = this.props;
+        const groupsArr = Object.keys(usersObj).sort();
         const visible = sliderBar.visible;
-        const list = this.converUserList(userList);
         return(
             <div className="us_cantainer">
-                <FilterContainer></FilterContainer>
+                <FilterContainer totalNum={totalNum} ></FilterContainer>
                 <Row className="no_margin">
-                    {/*<Progress percent={this.state.percent} strokeWidth={5} status="active" showInfo={false} />*/}
-                    <Col span={23} className="m_l_10">
-                        {   list.length ?
-                            list.map( userobj =>
-                                <Col key={userobj.token} xl={3} lg={5} md={6}>
-                                    <OnlineUser
-                                        userobj = {userobj}
-                                        forceLogout = {forceLogout}
-                                        selectedUser = {selectedUser}
-                                        toggleSlider = {toggleSlider}
-                                    ></OnlineUser>
-                                </Col>
-                            ):
-                            <div className="us_no_datas">暂无用户数据</div>
-                        }
-                    </Col>
                     {
-                        visible ? <SliderBar userObj = { sliderBar.userObj } closeSlider={closeSlider} />: ""
+                        groupsArr.length
+                            ? groupsArr.map( group => (
+                            <Col key={group} span={24}>
+                                <Col span={24} className="group_name">
+                                    <div>
+                                        {group}
+                                        <span className="count"><Badge count={usersObj[group].length} style={{ backgroundColor: '#63b5f1' }} /></span>
+                                    </div>
+                                </Col>
+                                <Col span={24}>
+                                    {
+                                        usersObj[group].length
+                                            ? usersObj[group].map(userobj => (
+                                                    <Col key={userobj.token} xl={3} lg={5} md={6}>
+                                                        <OnlineUser
+                                                            userobj = {userobj}
+                                                            forceLogout = {forceLogout}
+                                                            selectedUser = {selectedUser}
+                                                            toggleSlider = {toggleSlider}
+                                                            history = {history}
+                                                            optsAuths = {optsAuths}
+                                                        ></OnlineUser>
+                                                    </Col>
+                                                )
+                                            ) :<div className="us_no_datas">暂无用户数据</div>
+                                    }
+                                </Col>
+                            </Col>
+                            )
+                        )  : <div className="us_no_datas">暂无数据</div>
                     }
                 </Row>
+                {
+                    visible ? <SliderBar userObj = { sliderBar.userObj } closeSlider={closeSlider} />: ""
+                }
             </div>
 
         )

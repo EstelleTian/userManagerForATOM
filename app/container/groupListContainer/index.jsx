@@ -1,4 +1,5 @@
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import { refreshGroups, updateGroups, delOneGroup, openGroupModal, updateGroupSearch } from "../../actions"
 import groupsList from '../../components/groups/groupsList'
 
@@ -8,7 +9,9 @@ const mapStateToProps = (state) => {
     //若搜索值是空，不变
     if("" == searchVal){
         return {
-            groupList: state.groupList
+            groupList: state.groupList,
+            optsAuths: state.login.optsAuths,
+            searchVal: state.groupSearchValue
         }
     }else{
         //过滤组列数据
@@ -33,7 +36,9 @@ const mapStateToProps = (state) => {
             groupList: {
                 ...state.groupList,
                 data: newDataArr
-            }
+            },
+            optsAuths: state.login.optsAuths,
+            searchVal: state.groupSearchValue
         }
     }
 };
@@ -51,4 +56,4 @@ const GroupListContainer = connect(
     mapDispatchToProps
 )(groupsList);
 
-export default GroupListContainer
+export default withRouter(GroupListContainer)

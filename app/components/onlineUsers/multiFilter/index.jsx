@@ -1,5 +1,6 @@
 import React from 'react'
-import { Form, Input, Popover, Button, DatePicker, Tag } from 'antd';
+import { Form, Input, Popover, Button, DatePicker, Tag, Modal } from 'antd';
+import axios from 'axios'
 import $ from 'jquery'
 import { sendMultiFiltersUrl, parseFullTime } from '../../../utils/requestUrls'
 import './multiFilter.less'
@@ -36,11 +37,10 @@ class MultiFilterForm extends React.Component {
 
     resetForm = () => {
         this.props.form.resetFields();
-        this.sendMultiRequest({}, false);
+        this.sendMultiRequest({});
     }
 
     handleSubmit = (e) => {
-        const that = this;
         e.preventDefault();
         this.props.form.validateFieldsAndScroll((err, values) => {
             if (!err) {
@@ -62,14 +62,13 @@ class MultiFilterForm extends React.Component {
                     startTime: start,
                     endTime: end
                 }
-                this.sendMultiRequest(sendDatas, true)
-
+                this.sendMultiRequest(sendDatas)
             }
         });
     }
 
-    sendMultiRequest = ( datas, isClose ) => {
-        const { updateOnlineUserList, updateMultiFilter } = this.props;
+    sendMultiRequest = ( datas ) => {
+        const { updateOnlineUserList, updateMultiFilter, closeFilterPopover, history } = this.props;
         let sendValues = {
             username: "",
             clientVersion: "",
@@ -79,28 +78,80 @@ class MultiFilterForm extends React.Component {
             ...datas
         }
         const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
-        $.ajax({
+        axios.request({
             url: sendMultiFiltersUrl,
-            data: sendValues,
-            type: 'POST',
-            dataType: 'json',
-            beforeSend: function(request) {
-                request.setRequestHeader("Authorization", UUMAToken);
+            method: 'post',
+            params: sendValues,
+            headers: {
+                Authorization: UUMAToken,
+                'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
             },
-            success: (res) => {
-                if("200" == res.status && res.hasOwnProperty("onLineUserResultList")){
-                    const userList = res.onLineUserResultList || [];
-                    updateOnlineUserList(userList);
+            withCredentials: true
+        }).then( response => {
+            const json = response.data;
+            const status = json.status*1 || 0;
+            if(200 == status){
+                if(json.hasOwnProperty("onLineUserResultList")){
+                    const userList = json.onLineUserResultList || [];
+                    updateOnlineUserList(userList, true);
                     updateMultiFilter(sendValues);
+                    closeFilterPopover();
+                }else if(json.hasOwnProperty("warn")){
+                    closeFilterPopover();
+                    const error = json.warn.message ? json.warn.message : "";
+                    Modal.error({
+                        title: "查询失败:" +error
+                    })
                 }
-            },
-            error: (err) => {
-                console.error(err);
+            }else if( 400 == status ){
+                Modal.error({
+                    title: "登录失效，请重新登录!",
+                    onOk(){
+                        history.push('/');
+                    }
+                })
+            }else{
+                console.error("received data is invalida.");
+                console.error(json);
             }
+        }).catch(err => {
+            console.error(err);
         })
+
+        // $.ajax({
+        //     url: sendMultiFiltersUrl,
+        //     data: sendValues,
+        //     type: 'POST',
+        //     dataType: 'json',
+        //     beforeSend: function(request) {
+        //         request.setRequestHeader("Authorization", UUMAToken);
+        //     },
+        //     success: (res) => {
+        //         if("200" == res.status){
+        //             if(res.hasOwnProperty("onLineUserResultList")){
+        //                 const userList = res.onLineUserResultList || [];
+        //                 updateOnlineUserList(userList, false);
+        //                 updateMultiFilter(sendValues);
+        //                 closeFilterPopover();
+        //             }else if(res.hasOwnProperty("warn")){
+        //                 closeFilterPopover();
+        //                 const error = res.warn.message ? res.warn.message : "";
+        //                 Modal.error({
+        //                     title: "查询失败:" +error
+        //                 })
+        //             }
+        //         }
+        //
+        //
+        //     },
+        //     error: (err) => {
+        //         console.error(err);
+        //     }
+        // })
     }
 
     render() {
+        const { toggleFilterPopover, multiFilterKey } = this.props;
         const { getFieldDecorator } = this.props.form;
 
         const formItemLayout = {
@@ -113,18 +164,6 @@ class MultiFilterForm extends React.Component {
                 sm: { span: 14 },
             },
         };
-        const tailFormItemLayout = {
-            wrapperCol: {
-                xs: {
-                    span: 24,
-                    offset: 0,
-                },
-                sm: {
-                    span: 10,
-                    offset: 12,
-                },
-            },
-        };
 
         return (
             <Form onSubmit={this.handleSubmit} className="filter_form">
@@ -134,11 +173,9 @@ class MultiFilterForm extends React.Component {
                     hasFeedback
                 >
                     {getFieldDecorator('username', {
-                        // rules: [{
-                        //     type: 'string', message: 'The input is not valid E-mail!',
-                        // }],
+                        initialValue: multiFilterKey.username || ""
                     })(
-                        <Input />
+                        <Input type="string" />
                     )}
                 </FormItem>
                 <FormItem
@@ -147,7 +184,7 @@ class MultiFilterForm extends React.Component {
                     hasFeedback
                 >
                     {getFieldDecorator('clientVersion', {
-
+                        initialValue: multiFilterKey.clientVersion || ""
                     })(
                         <Input type="string" />
                     )}
@@ -158,7 +195,7 @@ class MultiFilterForm extends React.Component {
                     hasFeedback
                 >
                     {getFieldDecorator('ipAddress', {
-
+                        initialValue: multiFilterKey.ipAddress || ""
                     })(
                         <Input type="string" />
                     )}
@@ -169,7 +206,6 @@ class MultiFilterForm extends React.Component {
                 hasFeedback
             >
                 {getFieldDecorator('startTime', {
-
                 })(
                     <DatePicker
                         disabledDate={this.disabledStartDate}
@@ -187,7 +223,6 @@ class MultiFilterForm extends React.Component {
                     hasFeedback
                 >
                     {getFieldDecorator('endTime', {
-
                     })(
                         <DatePicker
                             disabledDate={this.disabledEndDate}
@@ -199,9 +234,10 @@ class MultiFilterForm extends React.Component {
                         />
                     )}
                 </FormItem>
-                <FormItem {...tailFormItemLayout}>
+                <FormItem wrapperCol={{span: 16,offset: 8}}>
                     <Button type="primary" htmlType="submit">查询</Button>
                     <Button type="ghost" className="m_l_10 clear_btn" onClick={this.resetForm}>清空</Button>
+                    <Button type="ghost" className="m_l_10 clear_btn" onClick={toggleFilterPopover}>取消</Button>
                 </FormItem>
             </Form>
         );
@@ -211,19 +247,18 @@ MultiFilterForm = Form.create()(MultiFilterForm);
 
 class MultiFilter extends React.Component{
     render(){
-        const { updateOnlineUserList, toggleFilterPopover, updateMultiFilter, multiFilterKey } = this.props;
+        const { toggleFilterPopover, multiFilterKey, filterPopover } = this.props;
         return (
             <div>
                 <Popover
                     content={
                         <div>
                             <MultiFilterForm
-                                updateOnlineUserList = {updateOnlineUserList}
-                                updateMultiFilter = {updateMultiFilter}
+                                {...this.props}
                             />
                         </div>
                     }
-                    title=""
+                    visible={filterPopover}
                     trigger="click"
                 >
                     <Button type="primary" icon="search" onClick={toggleFilterPopover}>多条件查询</Button>

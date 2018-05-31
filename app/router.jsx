@@ -1,32 +1,43 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Route, IndexRoute, hashHistory, browserHistory, Router } from 'react-router';
-import LoginContainer from './container/loginContainer';
-import App from './app';
-import Home from './components/home/home';
-import OnlineUserListContainer from './container/onlineUserListContainer';
-import UserListContainer from './container/userListContainer';
-import RoleListContainer from './container/roleListContainer';
-import AuthoritiesListContainer from './container/authoritiesListContainer';
-import GroupListContainer from './container/groupListContainer';
+import { BrowserRouter, Route, Redirect, Switch, HashRouter } from 'react-router-dom'
+import { createStore } from 'redux';
+import { Provider } from 'react-redux';
+import Reducer from './reducers';
+import Bundle from './bundle'
 import './fontIcon/index.css';
+const Store = createStore(Reducer)
+
+const LoginPage = () => (
+    <Bundle load={() => import('./container/loginContainer')}>
+        {(LoginPage) => <LoginPage />}
+    </Bundle>
+)
+
+const HomePage = () => (
+    <Bundle load={() => import('./container/homeContainer')}>
+        {(HomePage) => <HomePage />}
+    </Bundle>
+)
 
 const Root = () => (
-    <Router history={browserHistory}>
-        <Route path="/" component={ App } >
-            <IndexRoute components={ LoginContainer } />
-            <Route path="/home" component={Home} >
-                <IndexRoute components={OnlineUserListContainer} />
-                <Route path="/home/online-users" component={OnlineUserListContainer} />
-                <Route path="/home/users" component={UserListContainer} />
-                <Route path="/home/roles" component={RoleListContainer} />
-                <Route path="/home/authorities" component={AuthoritiesListContainer} />
-                <Route path="/home/groups" component={GroupListContainer} />
-            </Route>
-        </Route>
-    </Router>
+    <HashRouter>
+        <Provider store={Store}>
+            <div>
+                <Switch>
+                    <Route exact path="/" component={LoginPage}/>
+                    <Route path="/home" component={HomePage}/>
+                    <Redirect to="/"/>
+                </Switch>
+            </div>
+        </Provider>
+    </HashRouter>
 );
 
+const div = document.createElement('div');
+div.id = 'root';
+var first=document.body.firstChild;
+document.body.insertBefore(div, first);
 const dom = document.getElementById('root');
 
 ReactDOM.render(<Root />, dom);

@@ -1,9 +1,8 @@
 import React from 'react'
-import $ from 'jquery'
-import { browserHistory,hashHistory } from 'react-router'
-import {Table, ICon, Button, Col, Row, Modal, Input} from 'antd'
+import {Table, ICon, Button, Col, Row, Input, Popconfirm} from 'antd'
 import { getUsersListUrl, getRolesListUrl, getGroupsListUrl, deleteUsesrUrl } from '../../../utils/requestUrls'
 import UserModalContainer from '../../../container/userModalContainer'
+import { sendGetListReq, sendDeleteOneReq } from "../../../utils/requests"
 const Search = Input.Search
 import '../../common/atable.less'
 
@@ -16,7 +15,6 @@ class rolesList extends React.Component{
         this.retrieveRoleList = this.retrieveRoleList.bind(this);
         this.retrieveGroupList = this.retrieveGroupList.bind(this);
         this.onClickEdit = this.onClickEdit.bind(this);
-        this.onClickDel = this.onClickDel.bind(this);
     }
 
     componentDidMount(){
@@ -33,162 +31,31 @@ class rolesList extends React.Component{
 
     //获取用户列表
     retrieveUserList(){
-        const { refreshUsers } = this.props;
-        //取用户token
-        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
-        $.ajax({
-            url: getUsersListUrl,
-            type: 'get',
-            dataType: 'json',
-            beforeSend: function(request) {
-                request.setRequestHeader("Authorization", UUMAToken);
-            },
-            success: function(json){
-                const status = json.status*1 || 0;
-                if(200 == status && json.hasOwnProperty("userSet")){
-                    const userSet = json.userSet || [];
-                    const params = {
-                        data: userSet,
-                        loading: false
-                    }
-                    refreshUsers(params);
-                }else if( 400 == status ){
-                    Modal.error({
-                        title: "登录失效，请重新登录!",
-                        onOk(){
-                            browserHistory.push('/');
-                        }
-                    })
-                }else{
-                    console.error("received data is invalida.");
-                    console.error(json);
-                }
-            },
-            error: function(err){
-                console.error("retrieve user list failed:");
-                console.error(err);
-            }
-        })
+        const { refreshUsers, history } = this.props;
+        sendGetListReq(getUsersListUrl, refreshUsers, "userSet", history);
     }
 
     //获取角色列表
     retrieveRoleList(){
-        const { refreshRoles } = this.props;
-        //取用户token
-        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
-        $.ajax({
-            url: getRolesListUrl,
-            type: 'get',
-            dataType: 'json',
-            beforeSend: function(request) {
-                request.setRequestHeader("Authorization", UUMAToken);
-            },
-            success: function(json){
-                const status = json.status*1 || 0;
-                if(200 == status && json.hasOwnProperty("roleSet")){
-                    const roleSet = json.roleSet || [];
-                    const params = {
-                        data: roleSet,
-                        loading: false
-                    }
-                    refreshRoles(params);
-                }else if( 400 == status ){
-                    Modal.error({
-                        title: "登录失效，请重新登录!",
-                        onOk(){
-                            browserHistory.push('/');
-                        }
-                    })
-                }else{
-                    console.error("received data is invalida.");
-                    console.error(json);
-                }
-            },
-            error: function(err){
-                console.error("retrieve role list failed:");
-                console.error(err);
-            }
-        })
+        const { refreshRoles, history } = this.props;
+        sendGetListReq(getRolesListUrl, refreshRoles, "roleSet", history);
     }
 
     //获取组列表
     retrieveGroupList(){
-        const { refreshGroups } = this.props;
-        //取用户token
-        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
-        $.ajax({
-            url: getGroupsListUrl,
-            type: 'get',
-            dataType: 'json',
-            beforeSend: function(request) {
-                request.setRequestHeader("Authorization", UUMAToken);
-            },
-            success: function(json){
-                const status = json.status*1 || 0;
-                if(200 == status && json.hasOwnProperty("groupSet")){
-                    const groupSet = json.groupSet || [];
-                    const params = {
-                        data: groupSet,
-                        loading: false
-                    }
-                    refreshGroups(params);
-                }else if( 400 == status ){
-                    Modal.error({
-                        title: "登录失效，请重新登录!",
-                        onOk(){
-                            browserHistory.push('/');
-                        }
-                    })
-                }else{
-                    console.error("received data is invalida.");
-                    console.error(json);
-                }
-            },
-            error: function(err){
-                console.error("retrieve role list failed:");
-                console.error(err);
-            }
-        })
+        const { refreshGroups, history } = this.props;
+        sendGetListReq(getGroupsListUrl, refreshGroups, "groupSet", history);
     }
 
     //删除请求
     sendDeleteAjax(id){
         const { delOneUser } = this.props;
-        //取用户token
-        const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
-        $.ajax({
-            url: deleteUsesrUrl + id,
-            type: 'DELETE',
-            dataType: 'json',
-            beforeSend: function(request) {
-                request.setRequestHeader("Authorization", UUMAToken);
-            },
-            success: function(json){
-                const status = json.status*1 || 0;
-                if(200 == status){
-                    delOneUser(id);
-
-                }else if( 500 == status && json.hasOwnProperty("error")  ){
-                    const error = json.error.message ? json.error.message : "";
-                    Modal.error({
-                        title: "失败",
-                        content: error,
-                        okText: "确定"
-                    })
-                }else{
-                    console.error("received data is invalida.");
-                    console.error(json);
-                }
-            },
-            error: function(err){
-                console.error("delete group is failed.");
-                console.error(err);
-            }
-        })
+        sendDeleteOneReq(deleteUsesrUrl, delOneUser, id);
     }
 
     //列配置
     getColumns(){
+        const { optsAuths } = this.props;
         const columns = [
             {
                 title: "序号",
@@ -199,6 +66,17 @@ class rolesList extends React.Component{
                 title: "用户名",
                 dataIndex: 'username',
                 width: '10%',
+                sorter: (a, b) => {
+                    var nameA = a.username.toUpperCase();
+                    var nameB = b.username.toUpperCase();
+                    if (nameA < nameB) {
+                        return -1;
+                    }else if (nameA > nameB) {
+                        return 1;
+                    }else{
+                        return 0;
+                    }
+                }
             }, {
                 title: "中文描述",
                 dataIndex: 'descriptionCN',
@@ -226,22 +104,31 @@ class rolesList extends React.Component{
                 width: '10%',
                 render : ( text, record, index ) => (
                         <div className="table_opts">
-                            <Button type="primary"
-                                    shape="circle"
-                                    icon="edit"
-                                    title="修改"
-                                    onClick={()=>{
-                                        this.onClickEdit(record.user)
-                                    }}
-                            ></Button>
-                            <Button type="default"
-                                    shape="circle"
-                                    icon="delete"
-                                    title="删除"
-                                    onClick={()=>{
-                                        this.onClickDel(record.id, record.username)
-                                    }}
-                            ></Button>
+                            {
+                                (optsAuths.indexOf('31010241') == -1) ? ''
+                                    : <Button type="primary"
+                                              shape="circle"
+                                              icon="edit"
+                                              title="修改"
+                                              onClick={()=>{
+                                                  this.onClickEdit(record.user)
+                                              }}
+                                    ></Button>
+                            }
+                            {
+                                (optsAuths.indexOf('31010231') == -1) ? ''
+                                    : <Popconfirm title={`确定删除用户：${record.username}`} okText="确定" cancelText="取消"
+                                                  onConfirm={ () => {
+                                                      this.sendDeleteAjax(record.id)
+                                                  }}
+                                    >
+                                        <Button type="default"
+                                                shape="circle"
+                                                icon="delete"
+                                                title="删除"
+                                        ></Button>
+                                    </Popconfirm>
+                            }
                         </div>
                     )
             },
@@ -319,49 +206,38 @@ class rolesList extends React.Component{
         openUserModal(orgData)
     }
 
-    //点击删除处理事件
-    onClickDel(id, name){
-        //触发打开用户模块方法
-        const _this = this;
-        //根据ID获取用户信息
-        Modal.confirm({
-            title: "确认删除用户"+ name +"?",
-            maskClosable: true,
-            cancelText: '取消',
-            okText: '确认',
-            onOk: () => {
-                _this.sendDeleteAjax(id);
-            }
-        })
-    }
-
     render(){
-        const {  userList, openUserModal, updateUserSearch } = this.props;
+        const {  userList, openUserModal, updateUserSearch, optsAuths, searchVal } = this.props;
+        let fKey = "自定义搜索";
+        if(searchVal && searchVal != ""){
+            fKey = searchVal;
+        }
         return(
             <div className="table_container">
                 <Row span={24} className="table_nav">
                     <Col span={10}>
                         <span  className="table_title">用户列表</span>
                     </Col>
-                    <Col span={14}>
-                        <Col span={7} push={16}>
-                            <Search
-                                placeholder="自定义搜索"
-                                style={{ width:210 }}
-                                onSearch={value => updateUserSearch(value)}
-                            />
-                        </Col>
-                        <Col span={2} push={15}>
-                            <Button
-                                type="primary"
-                                onClick={() => {
-                                    openUserModal({})
-                                }
-                                }>
-                                添加用户
-                            </Button>
-                        </Col>
-
+                    <Col className="operators" span={14}>
+                        {
+                            (optsAuths.indexOf('31010221') == -1) ? ''
+                                : <Button
+                                    type="primary"
+                                    onClick={() => {
+                                        openUserModal({})
+                                    }
+                                    }>
+                                    添加用户
+                                </Button>
+                        }
+                        {
+                            (optsAuths.indexOf('31010212') == -1) ? ''
+                                : <Search
+                                    placeholder={ fKey }
+                                    style={{ width:210 }}
+                                    onSearch={value => updateUserSearch(value)}
+                                />
+                        }
                     </Col>
                 </Row>
                 <Row span={24} className="table_canvas">

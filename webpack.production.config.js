@@ -1,14 +1,13 @@
 /*
- * @file webpack配置文件(生产环境)
- * @author tanjizhen
- * @date 2017-04-30
+ * @file webpack配置文件(产品环境)
+ * @author liutianjiao
+ * @date 2017-09-05
  */
 const path = require('path');
 const webpack = require('webpack');
 //配置压缩js
 const uglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
-//复制html文件到生成目录
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 module.exports = {
     entry: {
         bundle: './app/router.jsx',
@@ -16,7 +15,8 @@ module.exports = {
     },
     output: {
         path: path.join(__dirname, '/build'),
-        filename: '[name].js',
+        filename: '[name].[hash:5].js',
+        chunkFilename: "js/[name].chunk.js" //给每个分片产生一个文件
     },
     resolve: {
         extensions: ['.js', '.jsx']
@@ -63,8 +63,18 @@ module.exports = {
               reduce_vars: true,
             }
         }),
-        new CopyWebpackPlugin([
-            { from: './app/index.html', to: 'index.html' }
-        ])
+        new HtmlWebpackPlugin({
+            //根据模板插入css/js等生成最终HTML
+            title: 'ATMM用户管理',//根据模板插入css/js等生成最终HTML
+            filename:'index.html',    //生成的html存放路径，相对于 path
+            // template:'./app/index.html',    //html模板路径
+            favicon: './app/favicon.ico',
+            inject:true,    //允许插件修改哪些内容，包括head与body
+            // hash:true,    //为静态资源生成hash值
+            minify:{    //压缩HTML文件
+                removeComments:true,    //移除HTML中的注释
+                collapseWhitespace:false    //删除空白符与换行符
+            }
+        })
     ]
 }

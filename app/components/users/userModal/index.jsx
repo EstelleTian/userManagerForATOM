@@ -1,4 +1,5 @@
 import React from 'react'
+import axios from 'axios'
 import $ from 'jquery'
 import {Modal, Button, Form, Input, Tabs, Row } from 'antd'
 import UserModalForRoleCbContainer from '../../../container/userModalForRoleCbContainer'
@@ -47,42 +48,79 @@ class ModalForm extends React.Component {
                     ajaxType = "put";
                 }
                 const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
-                $.ajax({
+                axios.request({
                     url: updateUsesrUrl,
+                    method: ajaxType,
                     data: JSON.stringify(params),
-                    type: ajaxType,
-                    contentType: 'application/json; charset=utf-8',
-                    beforeSend: (request) => {
-                        request.setRequestHeader("Authorization", UUMAToken);
+                    headers: {
+                        Authorization: UUMAToken,
+                        'Content-Type': 'application/json; charset=utf-8'
                     },
-                    success: function(json){
-                        const status = json.status*1;
-                        //成功
-                        if( 200 == status ){
-                            if( json.hasOwnProperty("user") && json.user.id){
-                                // 更新数据
-                                updateUsers({...json.user});
-                                form.resetFields();
-                                //关闭modal
-                                closeUserModal();
-                            }else{
-                                console.warn("Can't receive group key.")
-                            }
-                        }else if( (500 == status || 400 == status) && json.hasOwnProperty("error")  ){
-                            const error = json.error.message ? json.error.message : "";
-                            Modal.error({
-                                title: "失败",
-                                content: error,
-                                okText: "确定"
-                            })
+                    withCredentials: true
+                }).then( response => {
+                    const json = response.data;
+                    const status = json.status*1;
+                    //成功
+                    if( 200 == status ){
+                        if( json.hasOwnProperty("user") && json.user.id){
+                            // 更新数据
+                            updateUsers({...json.user});
+                            form.resetFields();
+                            //关闭modal
+                            closeUserModal();
                         }else{
-                            console.warn("Request return unkown datas.")
+                            console.warn("Can't receive group key.")
                         }
-                    },
-                    error: function(err){
-                        console.error(err);
+                    }else if( (200 != status) && json.hasOwnProperty("error")  ){
+                        const error = json.error.message ? json.error.message : "";
+                        Modal.error({
+                            title: "失败",
+                            content: error,
+                            okText: "确定"
+                        })
+                    }else{
+                        console.warn("Request return unkown datas.")
                     }
+                }).catch(err => {
+                    console.error(err);
                 })
+
+                // $.ajax({
+                //     url: updateUsesrUrl,
+                //     data: JSON.stringify(params),
+                //     type: ajaxType,
+                //     contentType: 'application/json; charset=utf-8',
+                //     beforeSend: (request) => {
+                //         request.setRequestHeader("Authorization", UUMAToken);
+                //     },
+                //     success: function(json){
+                //         const status = json.status*1;
+                //         //成功
+                //         if( 200 == status ){
+                //             if( json.hasOwnProperty("user") && json.user.id){
+                //                 // 更新数据
+                //                 updateUsers({...json.user});
+                //                 form.resetFields();
+                //                 //关闭modal
+                //                 closeUserModal();
+                //             }else{
+                //                 console.warn("Can't receive group key.")
+                //             }
+                //         }else if( (200 != status) && json.hasOwnProperty("error")  ){
+                //             const error = json.error.message ? json.error.message : "";
+                //             Modal.error({
+                //                 title: "失败",
+                //                 content: error,
+                //                 okText: "确定"
+                //             })
+                //         }else{
+                //             console.warn("Request return unkown datas.")
+                //         }
+                //     },
+                //     error: function(err){
+                //         console.error(err);
+                //     }
+                // })
 
             }else{
                 console.error(err);
@@ -127,6 +165,8 @@ class ModalForm extends React.Component {
                             //true正确
                             if(flag){
                                 callback()
+                            }else if(value.length > 64){
+                                callback("最长为64位")
                             }else{
                                 callback("只允许数字、字母、下划线")
                             }
@@ -148,6 +188,8 @@ class ModalForm extends React.Component {
                             //true正确
                             if(flag){
                                 callback()
+                            }else if(value.length > 64){
+                                callback("最长为64位")
                             }else{
                                 callback("只允许输入中文")
                             }
@@ -169,6 +211,8 @@ class ModalForm extends React.Component {
                             //true正确
                             if(flag){
                                 callback()
+                            }else if(value.length > 64){
+                                callback("最长为64位")
                             }else{
                                 callback("只允许输入英文")
                             }
@@ -185,7 +229,7 @@ class ModalForm extends React.Component {
                     label="用户名"
                     hasFeedback={true}
                 >
-                    {rulesGenerate.username(<Input className="form_input"  placeholder=""/>)}
+                    {rulesGenerate.username(<Input className="form_input"  placeholder="请输入数字、字母、下划线组合"/>)}
                 </FormItem>
                 {
                     userModal.data.id ? "" : (
@@ -215,7 +259,7 @@ class ModalForm extends React.Component {
                                     }
                                 }
                                 ]
-                            })(<Input type="password" className="form_input"  placeholder=""/>)}
+                            })(<Input type="password" className="form_input"  placeholder="请输入8位以上密码(必须包含大小写字母和数字)"/>)}
                         </FormItem>
                     )
                 }
@@ -225,14 +269,14 @@ class ModalForm extends React.Component {
                     label="中文描述"
                     hasFeedback={true}
                 >
-                    {rulesGenerate.descriptionCN(<Input className="form_input"  placeholder=""/>)}
+                    {rulesGenerate.descriptionCN(<Input className="form_input"  placeholder="请输入中文"/>)}
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
                     label="英文描述"
                     hasFeedback={true}
                 >
-                    {rulesGenerate.descriptionEN(<Input className="form_input"  placeholder=""/>)}
+                    {rulesGenerate.descriptionEN(<Input className="form_input"  placeholder="请输入英文"/>)}
                 </FormItem>
                 <FormItem
                     wrapperCol={{ span: 24}}

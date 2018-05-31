@@ -1,65 +1,84 @@
 import React from 'react'
-import {Form, Icon, Input, Checkbox, Button, Alert} from 'antd'
-import { browserHistory, hashHistory } from 'react-router'
+import {Form, Icon, Input, Button, Alert} from 'antd'
+import { withRouter } from 'react-router-dom'
 import { loginUrl } from '../../utils/requestUrls'
+import axios from 'axios'
 import $ from 'jquery'
 import "./login.less"
 
 const FormItem = Form.Item
 
 class LoginForm extends React.Component{
+    //从用户角色中查找出拥有的操作权限
+    convertOptAuth = (authArr) => {
+        let resStr = ""
+        if( authArr.length > 0 ){
+            //取权限
+            authArr.map( authObj => {
+                //取每个权限代码，添加到权限字符串中
+                let code = authObj.code || ''
+                code += ''
+                if( code != ''){
+                    if( resStr.indexOf(code) == -1){
+                        resStr += code + ','
+                    }
+                }
+            })
+        }
+        resStr = resStr.substring( 0 , resStr.length -1)
+        //排序
+        let resArr = resStr.split(',').sort()
+        return resArr.join()
+    }
+
     handleSubmit = (e) => {
         e.preventDefault();
         const _form = this.props.form;
+        const history = this.props.history;
+        const { filterList, updateMultiFilter } = this.props;
         _form.validateFieldsAndScroll((err, values) => {
             //success
             if (!err) {
                 const userLogin = this.props.userLogin;
                 const username = values.username.trim();
                 const password = values.password.trim();
-                $.ajax({
-                    url: loginUrl,
-                    data: "username=" + username + "&password=" + password,
-                    type: 'get',
-                    dataType: 'json',
-                    success: function(json){
-                        if( json.hasOwnProperty("token") && json.token.trim() != "" ){
-                            sessionStorage.setItem("UUMAToken", json.token);
-                            if( 200 == json.status*1 ){
-                                let param = {
-                                    username,
-                                    password,
-                                    loginStatus: true
-                                }
-                                userLogin(param);
-                                localStorage.setItem('username', username);
-                                browserHistory.push('/home');
-                            }
-                        }else if( 500 == json.status*1 && json.hasOwnProperty("error")  ){
-                            const error = json.error.message ? json.error.message : "";
-                            // let errmsg = "";
-                            // switch(error){
-                            //     case "USER IS NOT EXIST":
-                            //         errmsg = "用户名不存在"; break;
-                            //     case "USERNAME IS NULL":
-                            //         errmsg = "用户名不能为空"; break;
-                            //     case "PASSWORD IS WRONG" :
-                            //         errmsg = "密码错误"; break;
-                            //     case "PASSWORD IS NULL" :
-                            //         errmsg = "密码不能为空"; break;
-                            // }
-                            let param = {
-                                errmsg: error
-                            }
-                            userLogin(param);
-                            _form.resetFields();
-                        }
+                axios.get(loginUrl,{
+                    params: {
+                        username: username,
+                        password: password
                     },
-                    error: function(err){
-                        console.error(err);
-                    }
-                })
+                    withCredentials: true
+                }).then( response => {
+                    const json = response.data;
+                    if( 200 == json.status*1 && json.hasOwnProperty("token")){
+                        sessionStorage.setItem("UUMAToken", json.token)
+                        //账户拥有的权限
+                        let optsAuths = this.convertOptAuth( (json.authorityList || []))
+                        let user = json.user
+                        let params = {
+                            username,
+                            password,
+                            optsAuths,
+                            loginStatus: true,
+                            user
+                        }
+                        userLogin(params);
+                        //清除在线用户的自定义查询数据和多条件查询数据，以便于下次再登录后保留记录
+                        filterList("all");
+                        updateMultiFilter({});
 
+                        history.push('/home');
+                    }else if( 500 == json.status*1 && json.hasOwnProperty("error")  ){
+                        const error = json.error.message ? json.error.message : "";
+                        let param = {
+                            errmsg: error
+                        }
+                        userLogin(param);
+                        _form.resetFields();
+                    }
+                }).catch(err => {
+                    console.error(err);
+                })
             }else{
                 console.error(err);
             }
@@ -97,7 +116,7 @@ class LoginForm extends React.Component{
                 <div className="content">
                     <Form className="login_form" onSubmit={this.handleSubmit}>
                         <FormItem>
-                            <h3 className="title">ATOM用户管理</h3>
+                            <h3 className="title">ATMM用户管理</h3>
                         </FormItem>
                         <FormItem>
                             {
@@ -136,5 +155,5 @@ class LoginForm extends React.Component{
 
 const Login = Form.create()(LoginForm);
 
-export default Login;
+export default withRouter(Login)
 

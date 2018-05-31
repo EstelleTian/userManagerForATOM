@@ -7,7 +7,7 @@ const path = require('path');
 const webpack = require('webpack');
 const OpenBrowserPlugin = require('open-browser-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
-// const HtmlWebpackPlugin = require('html-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const port = 3000;
 
 module.exports = {
@@ -18,7 +18,8 @@ module.exports = {
     },
     output: {
         path: path.join(__dirname, '/build'),
-        filename: '[name].js',
+        filename: '[name].[hash:5].js',
+        chunkFilename: "js/[name].chunk.js" //给每个分片产生一个文件
     },
     resolve: {
         extensions: ['.js', '.jsx'],
@@ -45,14 +46,20 @@ module.exports = {
         ],
     },
     plugins: [
-        // new HtmlWebpackPlugin({
-        //     title: "CDM用户管理"
-        // }),
-        new webpack.optimize.CommonsChunkPlugin({
-            name: ['vendor'],
-        }),
+        new webpack.optimize.CommonsChunkPlugin('js/common.js'),
 		new OpenBrowserPlugin({
           url: `http://localhost:${port}`
+        }),
+        new HtmlWebpackPlugin({
+            title: 'ATMM用户管理',
+            // filename:'index.html',    //生成的html存放路径，相对于 path
+            // template:'./app/index.html',    //html模板路径
+            // inject:true,    //允许插件修改哪些内容，包括head与body
+            // hash:true,    //为静态资源生成hash值
+            // minify:{    //压缩HTML文件
+            //     removeComments:true,    //移除HTML中的注释
+            //     collapseWhitespace:false    //删除空白符与换行符
+            // }
         }),
         new BundleAnalyzerPlugin()
     ],
@@ -64,4 +71,5 @@ module.exports = {
         hot: true,
         historyApiFallback: true,
     },
+
 };

@@ -1,15 +1,13 @@
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import { refreshAuths, updateAuths, delOneAuth, openAuthModal, updateAuthSearch } from "../../actions"
 import authoritiesList from '../../components/authorities/authoritiesList'
 
 const mapStateToProps = (state) =>{
     const searchVal = state.authSearchValue.toLowerCase() || "";
+    let authoritiesListData = state.authoritiesList.data;
     //若搜索值是空，不变
-    if("" == searchVal){
-        return {
-            authoritiesList: state.authoritiesList
-        }
-    }else{
+    if("" != searchVal){
         //过滤数据
         const listData = state.authoritiesList.data || [];
         let newDataArr = [];
@@ -28,12 +26,16 @@ const mapStateToProps = (state) =>{
                 newDataArr.push(item);
             }
         });
-        return {
-            authoritiesList: {
-                ...state.authoritiesList,
-                data: newDataArr
-            }
-        }
+        authoritiesListData = newDataArr;
+
+    }
+    return {
+        authoritiesList: {
+            ...state.authoritiesList,
+            data: authoritiesListData
+        },
+        optsAuths: state.login.optsAuths,
+        searchVal: state.authSearchValue
     }
 };
 
@@ -50,4 +52,4 @@ const AuthoritiesListContainer = connect(
     mapDispatchToProps
 )(authoritiesList);
 
-export default AuthoritiesListContainer
+export default withRouter(AuthoritiesListContainer)

@@ -1,19 +1,24 @@
 import { connect } from 'react-redux'
-import { forceLogout, filterList, updateOnlineUserList, updateMultiFilter} from '../../actions/index'
+import { withRouter } from 'react-router-dom'
+import { forceLogout, filterList, updateOnlineUserList, updateMultiFilter, toggleFilterPopover, closeFilterPopover, showBtnLoading } from '../../actions/index'
 import FilterContent from '../../components/onlineUsers/filterContent/index'
 
 const mapStateToProps = (state) => ({
     userList: state.onlineUserList,
-    filterList: state.filterList,
+    filterKey: state.filterKey,
     multiFilterKey: state.multiFilterKey,
     filterPopover: state.filterPopover,
+    optsAuths: state.login.optsAuths
 })
 
 const mapDispatchToProps = {
-    forceLogout: forceLogout,
-    filterList: filterList,
-    updateOnlineUserList: updateOnlineUserList,
-    updateMultiFilter: updateMultiFilter,
+    forceLogout,
+    filterList,
+    updateOnlineUserList,
+    updateMultiFilter,
+    toggleFilterPopover,
+    closeFilterPopover,
+    showBtnLoading
 }
 
 const FilterContainer = connect(
@@ -21,4 +26,4 @@ const FilterContainer = connect(
     mapDispatchToProps
 )(FilterContent)
 
-export default FilterContainer
+export default withRouter(FilterContainer)

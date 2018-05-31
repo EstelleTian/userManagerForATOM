@@ -4,19 +4,33 @@ const initList = {
     loading: true,
     data: []
 }
+const sortByName = (data) => {
+    data = data.sort((a, b) => {
+        var nameA = a.name.toUpperCase();
+        var nameB = b.name.toUpperCase();
+        if (nameA < nameB) {
+            return -1;
+        }else if (nameA > nameB) {
+            return 1;
+        }else{
+            return 0;
+        }
+    })
+    return data;
+}
 export const groupList = (state = initList, action) => {
     switch (action.type){
         case "REFRESH_GROUPS" : {
             const data = action.data;
-            if(undefined == data){
-                return state;
-            }else if( data.constructor == Array ){
-                return {
+            let res = {...state};
+            if(undefined != data && data.constructor == Array){
+                res = {
                     loading: action.loading,
                     data: data
                 }
             }
-            return state;
+            res.data = sortByName(res.data)
+            return res;
         }
         case "UPDATE_GROUPS" : {
             let sData = state.data;
@@ -34,10 +48,13 @@ export const groupList = (state = initList, action) => {
                         break;
                     }
                 }
+                sData = sortByName(sData);
                 //添加
                 if(!isUpdata){
                     sData.unshift(newDatas);
                 }
+            }else{
+                sData = sortByName(sData);
             }
             return {
                 loading: false,
@@ -74,7 +91,7 @@ export const groupModal = (state = initModalData, action) => {
         case "OPEN_GROUP_MODAL" : {
             const data = action.data || {};
             //若data是空对象---添加模块
-            if( JSON.stringify(data) == "{}" ){
+            if( Object.keys(data).length == 0 ){
                 return {
                     visible: true,
                     isAdd: true,
@@ -102,7 +119,7 @@ export const groupModal = (state = initModalData, action) => {
 //组--自定义搜索--记录搜索值
 export const groupSearchValue = (state = "", action) => {
     switch (action.type){
-        case "UPDATE_SEARCH_VALUE": {
+        case "UPDATE_GROUP_SEARCH": {
             return action.value;
         }
         default: return state;

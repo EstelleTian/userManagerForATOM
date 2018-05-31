@@ -1,4 +1,5 @@
 import React from 'react'
+import axios from 'axios';
 import $ from 'jquery'
 import {Modal, Button, Form, Input} from 'antd'
 import {updateAuthoritiesUrl} from '../../../utils/requestUrls'
@@ -28,41 +29,77 @@ class ModalForm extends React.Component {
                     ajaxType = "put";
                 }
                 const UUMAToken = sessionStorage.getItem("UUMAToken") || "";
-                $.ajax({
+                axios.request({
                     url: updateAuthoritiesUrl,
+                    method: ajaxType,
                     data: JSON.stringify(params),
-                    type: ajaxType,
-                    contentType: 'application/json; charset=utf-8',
-                    beforeSend: (request) => {
-                        request.setRequestHeader("Authorization", UUMAToken);
+                    headers: {
+                        Authorization: UUMAToken,
+                        'Content-Type': 'application/json; charset=utf-8'
                     },
-                    success: function(json){
-                        const status = json.status*1;
-                        //成功
-                        if( 200 == status ){
-                            if( json.hasOwnProperty("authority") && json.authority.id){
-                                // 更新数据
-                                updateAuths({...json.authority});
-                                //关闭modal
-                                closeAuthModal();
-                            }else{
-                                console.warn("Can't receive authority key.")
-                            }
-                        }else if( 400 == status && json.hasOwnProperty("error")  ){
-                            const error = json.error.message ? json.error.message : "";
-                            Modal.error({
-                                title: "失败",
-                                content: error,
-                                okText: "确定"
-                            })
+                    withCredentials: true
+                }).then( response => {
+                    const json = response.data;
+                    const status = json.status*1;
+                    //成功
+                    if( 200 == status ){
+                        if( json.hasOwnProperty("authority") && json.authority.id){
+                            // 更新数据
+                            updateAuths({...json.authority});
+                            //关闭modal
+                            closeAuthModal();
                         }else{
-                            console.warn("Request return unkown datas.")
+                            console.warn("Can't receive authority key.")
                         }
-                    },
-                    error: function(err){
-                        console.error(err);
+                    }else if( 200 != status && json.hasOwnProperty("error")  ){
+                        const error = json.error.message ? json.error.message : "";
+                        Modal.error({
+                            title: "失败",
+                            content: error,
+                            okText: "确定"
+                        })
+                    }else{
+                        console.warn("Request return unkown datas.")
                     }
+                }).catch(err => {
+                    console.error(err);
                 })
+
+                // $.ajax({
+                //     url: updateAuthoritiesUrl,
+                //     data: JSON.stringify(params),
+                //     type: ajaxType,
+                //     contentType: 'application/json; charset=utf-8',
+                //     beforeSend: (request) => {
+                //         request.setRequestHeader("Authorization", UUMAToken);
+                //     },
+                //     success: function(json){
+                //         const status = json.status*1;
+                //         //成功
+                //         if( 200 == status ){
+                //             if( json.hasOwnProperty("authority") && json.authority.id){
+                //                 // 更新数据
+                //                 updateAuths({...json.authority});
+                //                 //关闭modal
+                //                 closeAuthModal();
+                //             }else{
+                //                 console.warn("Can't receive authority key.")
+                //             }
+                //         }else if( 200 != status && json.hasOwnProperty("error")  ){
+                //             const error = json.error.message ? json.error.message : "";
+                //             Modal.error({
+                //                 title: "失败",
+                //                 content: error,
+                //                 okText: "确定"
+                //             })
+                //         }else{
+                //             console.warn("Request return unkown datas.")
+                //         }
+                //     },
+                //     error: function(err){
+                //         console.error(err);
+                //     }
+                // })
 
             }else{
                 console.error(err);
@@ -94,10 +131,15 @@ class ModalForm extends React.Component {
                 initialValue: authoritiesModal.data.code || "",
                 rules : [{
                     required: true,
+                    min: 8,
+                    max: 8,
+                    len: 8,
                     validator : (rule, value, callback) => {
                         value = value+"";
                         if(value.trim() == ""){
                             callback("必填项")
+                        }else if(value.length != 8){
+                            callback("请输入8位权限码")
                         }else{
                             const reg = /^\d*$/;
                             let flag = reg.test(value);
@@ -105,7 +147,7 @@ class ModalForm extends React.Component {
                             if(flag){
                                 callback()
                             }else{
-                                callback("只能输入数字")
+                                callback("请输入纯数字")
                             }
                         }
                     }
@@ -115,6 +157,7 @@ class ModalForm extends React.Component {
                 initialValue: authoritiesModal.data.name || "",
                 rules : [{
                     required: true,
+                    max: 64,
                     validator : (rule, value, callback) => {
                         if(value.trim() == ""){
                             callback("必填项")
@@ -135,9 +178,12 @@ class ModalForm extends React.Component {
                 initialValue: authoritiesModal.data.description || "",
                 rules : [{
                     required: true,
+                    max: 64,
                     validator : (rule, value, callback) => {
                         if(value.trim() == ""){
                             callback("必填项")
+                        }else if(value.length > 64){
+                            callback("最长为64位")
                         }else{
                             callback()
                         }
@@ -152,21 +198,21 @@ class ModalForm extends React.Component {
                     label="权限码"
                     hasFeedback={true}
                 >
-                    {rulesGenerate.code(<Input prefix={""} className="form_input"  placeholder=""/>)}
+                    {rulesGenerate.code(<Input prefix={""} placeholder="请输入8位数字" className="form_input"/>)}
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
                     label="权限名"
                     hasFeedback={true}
                 >
-                    {rulesGenerate.name(<Input prefix={""} className="form_input"  placeholder=""/>)}
+                    {rulesGenerate.name(<Input prefix={""} className="form_input"  placeholder="请输入数字、字母、下划线组合"/>)}
                 </FormItem>
                 <FormItem
                     {...formItemLayout}
                     label="描述"
                     hasFeedback={true}
                 >
-                    {rulesGenerate.description(<Input prefix={""} className="form_input"  placeholder=""/>)}
+                    {rulesGenerate.description(<Input prefix={""} className="form_input"  placeholder="最长64位"/>)}
                 </FormItem>
                 <FormItem
                     wrapperCol={{ span: 12, offset: 12 }}

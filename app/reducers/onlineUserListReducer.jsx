@@ -1,4 +1,18 @@
 //在线用户--在线用户模块数据记录
+const sortByFinalRefreshTime = (data) => {
+    data = data.sort((a, b) => {
+        var timeA = a.finalRefreshTime * 1;
+        var timeB = b.finalRefreshTime * 1;
+        if (timeA < timeB) {
+            return 1;
+        }else if (timeA > timeB) {
+            return -1;
+        }else{
+            return 0;
+        }
+    })
+    return data;
+}
 export const onlineUserList = ( state = [], action) => {
     switch (action.type){
         //退出
@@ -14,13 +28,31 @@ export const onlineUserList = ( state = [], action) => {
         }
         //更新
         case "UPDATE_USERLIST" : {
+            //isUpdateActived为false则不更新active状态，checkbox状态更新全部为false
+            let aTokens = [];
+            if(!action.isUpdateActived){
+                //取出是active的token集合
+                for(let index in state){
+                    let userObj = state[index];
+                    if(userObj.isActived){
+                        aTokens.push(userObj.token);
+                    }
+                }
+            }
+
             let userList = action.userList;
-                for(let index in userList){
-                    let userObj = userList[index];
-                    userObj['online'] = true;
+            for(let index in userList){
+                let userObj = userList[index];
+                userObj['online'] = true;
+                if(aTokens.indexOf(userObj.token)>-1){
+                    userObj['isActived'] = true;
+                }else{
                     userObj['isActived'] = false;
                 }
+            }
+            userList = sortByFinalRefreshTime(userList);
             return userList;
+
         }
         //多选选择切换
         case "SELECTED_USER" : {
@@ -101,12 +133,27 @@ const init = {
 export const multiFilterKey = (state = init, action) => {
     switch (action.type){
         case "UPDATE_MULTI_FILTER" : {
-            const res = {
-                ...state,
-                ...action.result
-            };
-            return res
+            if(Object.keys(action.result).length == 0){
+                return {
+                    ...init
+                }
+            }else{
+                return {
+                    ...action.result
+                }
+            }
         }
         default : return state
+    }
+}
+//在线用户--多条件查询查询框显隐
+export const filterPopover = (state = false, action) => {
+    switch (action.type){
+        case "TOGGLE_FILTER_POPOVER":
+            return !state;
+        case "CLOSE_FILTER_POPOVER" :
+            return false;
+        default :
+            return state;
     }
 }

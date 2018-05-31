@@ -4,6 +4,12 @@ const initList = {
     loading: true,
     data: []
 }
+const sortByCode = (data) => {
+    data = data.sort((a1, a2) => {
+        return (a1.code*1) - (a2.code*1)
+    })
+    return data;
+}
 export const authoritiesList = (state = initList, action) => {
     switch (action.type){
         case "REFRESH_AUTHS" : {
@@ -13,7 +19,7 @@ export const authoritiesList = (state = initList, action) => {
             }else if( data.constructor == Array ){
                 return {
                     loading: action.loading,
-                    data: action.data
+                    data: sortByCode(action.data)
                 }
             }
             return state;
@@ -34,10 +40,13 @@ export const authoritiesList = (state = initList, action) => {
                         break;
                     }
                 }
+                sData = sortByCode(sData);
                 //添加
                 if(!isUpdata){
                     sData.unshift(newDatas);
                 }
+            }else{
+                sData = sortByCode(sData);
             }
             return {
                 loading: false,
@@ -74,7 +83,7 @@ export const authoritiesModal = (state = initModalData, action) => {
         case "OPEN_AUTH_MODAL" : {
             const data = action.data || {};
             //若data是空对象---添加模块
-            if( JSON.stringify(data) == "{}" ){
+            if( Object.keys(data).length == 0 ){
                 return {
                     visible: true,
                     isAdd: true,

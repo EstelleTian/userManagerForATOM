@@ -1,7 +1,8 @@
 import React from 'react'
 import {Checkbox, Col} from 'antd'
+import './checkboxItem.less'
 
-const checkboxItem = ({obj, active, onChoose}) => {
+const checkboxItem = ({obj, active, onChoose, span=8}) => {
     const description = obj.description;
     const id = obj.id;
     const clickCheckbox = (e) => {
@@ -10,9 +11,9 @@ const checkboxItem = ({obj, active, onChoose}) => {
     return (
         <Col
             key={id}
-            span={8}
+            span={span}
         >
-            <Checkbox value={id} className="auth-checkbox" checked={active} onChange={clickCheckbox}>
+            <Checkbox value={id} className="auth-checkbox" checked={active} onChange={clickCheckbox} style={{fontSize: '14px'}}>
                 <span title={description}>{description}</span>
             </Checkbox>
         </Col>

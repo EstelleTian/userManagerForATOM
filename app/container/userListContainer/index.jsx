@@ -1,6 +1,8 @@
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import { refreshUsers, updateUsers, refreshRoles, refreshGroups, delOneUser, openUserModal, setRoleDefaultData, setGroupDefaultData, updateUserSearch } from "../../actions"
 import usersList from '../../components/users/usersList'
+
 
 const filterList = (item, searchVal) => {
     let flag = false;
@@ -30,7 +32,9 @@ const mapStateToProps = (state) => {
         return {
             userList: state.userList,
             roleList: state.roleList,
-            groupList: state.groupList
+            groupList: state.groupList,
+            optsAuths: state.login.optsAuths,
+            searchVal: state.userSearchValue
         }
     }else{
         //过滤组列数据
@@ -48,7 +52,9 @@ const mapStateToProps = (state) => {
                 data: newDataArr
             },
             roleList: state.roleList,
-            groupList: state.groupList
+            groupList: state.groupList,
+            optsAuths: state.login.optsAuths,
+            searchVal: state.userSearchValue
         }
     }
 };
@@ -70,4 +76,4 @@ const UserListContainer = connect(
     mapDispatchToProps
 )(usersList);
 
-export default UserListContainer
+export default withRouter(UserListContainer)

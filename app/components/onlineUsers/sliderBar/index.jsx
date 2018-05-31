@@ -30,27 +30,35 @@ const SliderBar = ( { userObj, closeSlider } ) => (
                     用户信息
                 </Col>
                 <Col span="24" className="detail_line">
-                    <Col span="7" className="us_panel">
+                    <Col span="9" className="us_panel">
                        用户名：
                     </Col>
-                    <Col span="17">
-                        <span>{userObj.user.username || ""}</span>
+                    <Col span="15">
+                        <span>{userObj.user.username || "N/A"}</span>
                     </Col>
                 </Col>
                 <Col span="24" className="detail_line">
-                    <Col span="7" className="us_panel">
+                    <Col span="9" className="us_panel">
                         部门：
                     </Col>
-                    <Col span="17">
-                        <span>{convertGroupsToString(userObj.user.groups)}</span>
+                    <Col span="15">
+                        <span>{convertGroupsToString(userObj.user.groups) || "N/A"}</span>
                     </Col>
                 </Col>
                 <Col span="24" className="detail_line">
-                    <Col span="7" className="us_panel">
+                    <Col span="9" className="us_panel">
+                        地区：
+                    </Col>
+                    <Col span="15">
+                        <span>{userObj.user.region || "N/A"}</span>
+                    </Col>
+                </Col>
+                <Col span="24" className="detail_line">
+                    <Col span="9" className="us_panel">
                         描述：
                     </Col>
-                    <Col span="17">
-                        <span>{userObj.user.descriptionCN || ""}</span>
+                    <Col span="15">
+                        <span>{userObj.user.descriptionCN || "N/A"}</span>
                     </Col>
                 </Col>
             </Row>
@@ -59,29 +67,38 @@ const SliderBar = ( { userObj, closeSlider } ) => (
                     终端信息
                 </Col>
                 <Col span="24" className="detail_line">
-                    <Col span="7" className="us_panel">
-                        登录时间：
-                    </Col>
-                    <Col span="17">
-                        <span>{parseFullTime(userObj.loginTime)}</span>
-                    </Col>
-                </Col>
-                <Col span="24" className="detail_line">
-                    <Col span="7" className="us_panel">
+                    <Col span="9" className="us_panel">
                         客户端版本:
                     </Col>
-                    <Col span="17">
-                        <span>{userObj.clientVersion || ""}</span>
+                    <Col span="15">
+                        <span>{(userObj.clientVersion && userObj.clientVersion != "null") ? userObj.clientVersion  : "N/A"}</span>
                     </Col>
                 </Col>
                 <Col span="24" className="detail_line">
-                    <Col span="7" className="us_panel">
+                    <Col span="9" className="us_panel">
                         IP：
                     </Col>
-                    <Col span="17">
-                        <span>{userObj.ipAddress || ""}</span>
+                    <Col span="15">
+                        <span>{userObj.ipAddress || "N/A"}</span>
                     </Col>
                 </Col>
+                <Col span="24" className="detail_line">
+                    <Col span="9" className="us_panel">
+                        登录时间：
+                    </Col>
+                    <Col span="15">
+                        <span>{parseFullTime(userObj.loginTime || "") || "N/A"}</span>
+                    </Col>
+                </Col>
+                <Col span="24" className="detail_line">
+                    <Col span="9" className="us_panel">
+                        最后刷新时间：
+                    </Col>
+                    <Col span="15">
+                        <span>{parseFullTime(userObj.finalRefreshTime || "") || "N/A"}</span>
+                    </Col>
+                </Col>
+
             </Row>
 
 

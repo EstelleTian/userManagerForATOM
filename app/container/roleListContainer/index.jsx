@@ -1,4 +1,5 @@
 import { connect } from 'react-redux'
+import { withRouter } from 'react-router-dom'
 import { refreshRoles, updateRoles, delOneRole, openRoleModal, refreshAuths, setDefaultData, updateRoleSearch } from "../../actions"
 import rolesList from '../../components/roles/rolesList'
 
@@ -9,7 +10,9 @@ const mapStateToProps = (state) => {
     if("" == searchVal){
         return {
             roleList: state.roleList,
-            authoritiesList: state.authoritiesList
+            authoritiesList: state.authoritiesList,
+            optsAuths: state.login.optsAuths,
+            searchVal: state.roleSearchValue
         }
     }else{
         //过滤组列数据
@@ -36,7 +39,9 @@ const mapStateToProps = (state) => {
                 ...state.roleList,
                 data: newDataArr
             },
-            authoritiesList: state.authoritiesList
+            authoritiesList: state.authoritiesList,
+            optsAuths: state.login.optsAuths,
+            searchVal: state.roleSearchValue
         }
     }
 };
@@ -56,4 +61,4 @@ const RoleListContainer = connect(
     mapDispatchToProps
 )(rolesList);
 
-export default RoleListContainer
+export default withRouter(RoleListContainer)

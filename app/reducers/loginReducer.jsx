@@ -2,17 +2,21 @@
 const intiLoginState = {
     username: "",
     password: "",
+    optsAuths: "",
     loginStatus: false,
+    user : {},
     errmsg: ""
 };
 export const login = ( state = intiLoginState, action ) => {
     switch( action.type ){
-        case "USER_LOGIN" :
+        case "USER_LOGIN" : {
             if( action.loginStatus ){
                 return {
                     username: action.username || "",
                     password: action.password || "",
+                    optsAuths: action.optsAuths || "",
                     loginStatus: action.loginStatus || false,
+                    user : action.user || {},
                     errmsg: action.errmsg || ""
                 }
             }else{
@@ -21,6 +25,18 @@ export const login = ( state = intiLoginState, action ) => {
                     errmsg: action.errmsg
                 }
             }
+        }
+        case "UPDATE_USER_AUTHS" : {
+            return {
+                    username: action.username || "",
+                    password: action.password || "",
+                    optsAuths: action.optsAuths || "",
+                    loginStatus: action.loginStatus || false,
+                    user : action.user || {},
+                    errmsg: action.errmsg || ""
+                }
+
+        }
         default:
             return state
     }

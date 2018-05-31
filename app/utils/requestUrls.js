@@ -1,8 +1,10 @@
 // import path from 'path';
 
 //测试地址
-// const host = "http://192.168.217.233:18380/uuma-server"
-const host = "http://192.168.243.69:8080/uuma-server"
+// const host = "http://172.25.142.67:8080/uuma-server"
+// const host = "http://192.168.208.22:8080/uuma-server"
+// const host = "http://192.168.208.21:8081/uuma-server"
+const host = "http://192.168.217.233:18380/uuma-server"
 // const host = "/uuma-server"
 //新疆生产地址
 // const host = "http://10.27.10.16:18080/uuma-server"
@@ -12,6 +14,8 @@ const host = "http://192.168.243.69:8080/uuma-server"
 export const loginUrl = `${host}/uuma/login`
 //登出
 export const logoutUrl = `${host}/uuma/logout`
+//定时刷新用户信息
+export const getUserInfoUrl = `${host}/uuma/user`
 //在线用户 获取在线用户列表
 export const getOnlineUserListUrl = `${host}/online/list`
 //在线用户 删除
@@ -20,6 +24,8 @@ export const sendLogoutUrl = `${host}/online/del`
 export const getOnlineUserByTokenUrl = `${host}/online/user-bytoken`
 //在线用户 多条件查询
 export const sendMultiFiltersUrl = `${host}/online/filtered-list`
+// 检测在线用户
+export const violationClientUrl = `${host}/online/violation-client`
 //查询所有角色
 export const getRolesListUrl = `${host}/roles/list`
 //查询所有权限
@@ -45,6 +51,26 @@ export const deleteAuthoritiesUrl = `${host}/authorities/`
 export const deleteRolesUrl = `${host}/roles/`
 //删除用户
 export const deleteUsesrUrl = `${host}/users/`
+
+// 查询所有登录控制类型
+export const getAllLoginCategoryUrl = `${host}/loginCategory/list`
+// 查询一个登录控制类型
+export const getSingleLoginCategoryUrl = `${host}/loginCategory`
+// 修改登录控制类型
+export const updateLoginCategoryUrl = `${host}/loginCategory`
+
+// 查询一个登录控制版本
+export const getSingleLoginVersionUrl = `${host}/loginVersion/`
+// 通过登录控制类型id查询登录控制版本
+// export const getLoginVersionByCategoryIdUrl = `${host}/loginVersion/loginTypeId/`
+// 通过登录控制类型id查询登录控制版本－－测试用
+export const getLoginVersionByCategoryIdUrl = `${host}/loginVersion/loginTypeId/`
+// 修改登录控制版本
+export const updateLoginVersionUrl = `${host}/loginVersion`
+// 保存登录控制版本
+export const saveLoginVersionByCategoryIdUrl = `${host}/loginVersion`
+// 删除登录控制版本
+export const deleteLoginVersionUrl = `${host}/loginVersion/`
 
 
 export const parseHalfFullTime = ( str ) => {

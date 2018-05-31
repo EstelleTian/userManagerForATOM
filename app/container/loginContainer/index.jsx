@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import { userLogin } from '../../actions'
+import { userLogin, filterList, updateMultiFilter } from '../../actions'
 import Login from '../../components/login'
 
 const mapStateToProps = ( state ) => ({
@@ -8,7 +8,9 @@ const mapStateToProps = ( state ) => ({
 })
 
 const mapDispatchToProps =  {
-    userLogin
+    userLogin,
+    filterList,
+    updateMultiFilter,
 }
 
 const LoginContainer = connect(

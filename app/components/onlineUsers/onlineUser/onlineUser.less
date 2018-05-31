@@ -1,11 +1,11 @@
 .us_user{
-  margin: 12px 5px;
+  margin: 6px 6px;
   min-width: 140px;
-  background: #c6c6c6;
+  background: #dedede;
   box-shadow: -1px 1px 6px #888888;
 
   .us_user_name{
-    font-size: 14px;
+    font-size: 16px;
     padding-top: 5px;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -36,9 +36,9 @@
     background-color: rgba(244, 110, 101, 1);
   }
   .us_user_icon{
-    font-size: 22px;
-    float: left;
-    padding: 8px 2px;
+    font-size: 24px;
+    margin-top: 4px;
+    margin-left: 6px;
   }
   .us_user_icon.online{
     color: #108ee9;
@@ -48,14 +48,19 @@
   }
 
   .user_checkbox{
-    padding: 3px;
+    padding: 6px 3px 3px;
+  }
+  .text_ellipsis{
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
 
 }
-.us_user:hover{
+.us_user:hover,.us_user.active{
   cursor: pointer;
   box-shadow: 2px 2px 20px #aaa;
   -webkit-transition: .3s ease box-shadow;
   transition: .3s ease box-shadow;
 }
+
